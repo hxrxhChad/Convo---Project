@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1023990619577",
+    "project_id": "convo-4b456",
+    "storage_bucket": "convo-4b456.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1023990619577:android:9509883e84f5551f626a68",
+        "android_client_info": {
+          "package_name": "brogrammer.developments.chat_alpha_sept"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1023990619577-kqdtc9nj7oe234aduhvn84ks4okqmo2n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMHW9g8cmh4HBjJM_sa6lZPQ8MfdMBpoo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1023990619577-kqdtc9nj7oe234aduhvn84ks4okqmo2n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
