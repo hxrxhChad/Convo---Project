@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../views/views.dart';
 
-class AuthScreen extends StatelessWidget {
-  const AuthScreen({super.key});
+class MessageScreen extends StatelessWidget {
+  const MessageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const AuthView();
+    return const MessageView();
   }
 }

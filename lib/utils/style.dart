@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'index.dart';
+import 'utils.dart';
 
 class Style {
   static const _pageTransitionTheme = PageTransitionsTheme(builders: {
@@ -11,6 +11,7 @@ class Style {
   });
 
   static final ThemeData light = ThemeData(
+      useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: const ColorScheme.light().copyWith(
         primary: lightPrimaryColor,
@@ -20,6 +21,7 @@ class Style {
       textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme));
 
   static final ThemeData dark = ThemeData(
+      useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: const ColorScheme.dark().copyWith(
         primary: darkPrimaryColor,
@@ -27,13 +29,6 @@ class Style {
       primaryColor: darkPrimaryColor,
       pageTransitionsTheme: _pageTransitionTheme,
       textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme));
-
-  void systemOverlay(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      systemNavigationBarColor: Theme.of(context).scaffoldBackgroundColor,
-    ));
-  }
 
   void lightOverlay(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -44,9 +39,9 @@ class Style {
   }
 
   void darkOverlay(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        systemNavigationBarColor: Theme.of(context).shadowColor,
+        systemNavigationBarColor: Color.fromARGB(255, 49, 49, 49),
         statusBarIconBrightness: Brightness.light,
         systemNavigationBarIconBrightness: Brightness.light));
   }
