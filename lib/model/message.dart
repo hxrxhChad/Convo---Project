@@ -15,7 +15,7 @@ class MessageModel extends Equatable {
   final String type;
   final String content;
 
-  const MessageModel( 
+  const MessageModel(
       {required this.messageId,
       required this.chatId,
       required this.senderId,

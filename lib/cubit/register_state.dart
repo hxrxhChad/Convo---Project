@@ -9,6 +9,7 @@ class RegisterState extends Equatable {
   final String password;
   final String name;
   final int key;
+  final String error;
   final Status status;
 
   const RegisterState(
@@ -18,6 +19,7 @@ class RegisterState extends Equatable {
       this.password = '',
       this.name = '',
       this.key = 0,
+      this.error = '',
       this.status = Status.initial});
 
   RegisterState copyWith(
@@ -27,6 +29,7 @@ class RegisterState extends Equatable {
       String? password,
       String? name,
       int? key,
+      String? error,
       Status? status}) {
     return RegisterState(
       username: username ?? this.username,
@@ -35,13 +38,14 @@ class RegisterState extends Equatable {
       password: password ?? this.password,
       name: name ?? this.name,
       key: key ?? this.key,
+      error: error ?? this.error,
       status: status ?? this.status,
     );
   }
 
   @override
   List<Object?> get props =>
-      [username, taken, email, password, name, key, status];
+      [username, taken, email, password, name, key, error, status];
 }
 
 /*
