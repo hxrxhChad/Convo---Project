@@ -15,11 +15,13 @@ class AuthService {
     }
   }
 
-  String registerFormError(
-      String username, String email, String password, String name) {
+  String registerFormError(String username, String photo, String email,
+      String password, String name) {
     if (username.isEmpty) {
       return "Username can't be empty";
     } else if (email.isEmpty) {
+      return "Email can't be empty";
+    } else if (photo.isEmpty) {
       return "Email can't be empty";
     } else if (password.isEmpty) {
       return "Password can't be empty";
@@ -49,7 +51,7 @@ class AuthService {
   }
 
   Future<void> registerCloud(String username, String email, String password,
-      String name, int time) async {
+      String name, String photo, int time) async {
     AuthModel user = AuthModel(
         username: username,
         email: email,
@@ -57,7 +59,7 @@ class AuthService {
         name: name,
         time: time,
         gender: '',
-        photo: '');
+        photo: photo);
 
     final userRef = FirebaseFirestore.instance
         .collection('users')
@@ -67,5 +69,13 @@ class AuthService {
     final data = user.toJson();
 
     userRef.set(data);
+  }
+
+  Stream<bool> getTaken(String username) {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .snapshots()
+        .map((querySnapshot) => querySnapshot.docs.isNotEmpty);
   }
 }

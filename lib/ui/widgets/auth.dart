@@ -7,6 +7,7 @@ class AuthField extends StatelessWidget {
   final TextInputType keyboardType;
   final bool obscureText;
   final void Function(String) onChanged;
+  final void Function() onTap;
   final String initialValue;
   final bool eye;
   const AuthField(
@@ -16,21 +17,26 @@ class AuthField extends StatelessWidget {
       required this.obscureText,
       required this.onChanged,
       required this.initialValue,
-      required this.eye});
+      required this.eye,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold),
+      style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold),
       onChanged: onChanged,
+      onTap: onTap,
       cursorHeight: 15.h,
-      textAlignVertical: TextAlignVertical.center,
       initialValue: initialValue,
+      textAlignVertical: TextAlignVertical.center,
       keyboardType: keyboardType,
       autocorrect: false,
       obscureText: obscureText,
       cursorColor: Theme.of(context).disabledColor,
       decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: TextStyle(
+              color: Theme.of(context).iconTheme.color!.withOpacity(.5)),
           contentPadding:
               EdgeInsets.only(left: 10.w, top: 12.h, right: 10.w, bottom: 12.h),
           suffixIcon: Padding(
@@ -52,6 +58,12 @@ class AuthField extends StatelessWidget {
               borderSide:
                   // BorderSide(color: Theme.of(context).iconTheme.color!),
                   BorderSide.none),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(
+                width: 2,
+                color: Theme.of(context).iconTheme.color!.withOpacity(.1)),
+          ),
           filled: true),
     );
   }
@@ -87,6 +99,7 @@ class AuthButton extends StatelessWidget {
             label,
             style: TextStyle(
                 fontWeight: FontWeight.bold,
+                fontSize: 11.sp,
                 color: outlined
                     ? Theme.of(context).iconTheme.color
                     : Colors.white),
@@ -127,6 +140,7 @@ class AuthButtonSmall extends StatelessWidget {
             label,
             style: TextStyle(
                 fontWeight: FontWeight.bold,
+                fontSize: 11.sp,
                 color: outlined
                     ? Theme.of(context).iconTheme.color
                     : Colors.white),
@@ -148,12 +162,13 @@ class PaddedBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          color: Theme.of(context).iconTheme.color!.withOpacity(.04),
+          color: Theme.of(context).iconTheme.color!.withOpacity(.8),
           borderRadius: BorderRadius.circular(7)),
       padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.h),
       child: Text(
         label,
-        style: const TextStyle(fontWeight: FontWeight.bold),
+        style: TextStyle(
+            fontWeight: FontWeight.w500, fontSize: 11.sp, color: Colors.white),
       ),
     );
   }

@@ -3,3 +3,4 @@ export 'register.dart';
 export 'setting.dart';
 export 'chat.dart';
 export 'message.dart';
+export 'search.dart';

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../cubit/cubit.dart';
 import '../widgets/widgets.dart';
 
 class AuthView extends StatelessWidget {
@@ -17,41 +19,56 @@ class AuthView extends StatelessWidget {
           children: [
             VGap(height: 140.h),
             Text('Login to Convo',
-                style: TextStyle(fontSize: 40.sp, fontWeight: FontWeight.bold)),
-            VGap(height: 10.h),
+                style: TextStyle(fontSize: 30.sp, fontWeight: FontWeight.bold)),
+            VGap(height: 15.h),
             const PaddedBox(label: 'Email Verification'),
-            VGap(height: 40.h),
+            VGap(height: 50.h),
             Text(
-              'Email Address',
+              'Email',
               style: TextStyle(
                   color: Theme.of(context).iconTheme.color!.withOpacity(.5),
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.bold),
             ),
             VGap(height: 10.h),
             AuthField(
-                hintText: 'Enter your email address',
-                keyboardType: TextInputType.emailAddress,
-                obscureText: false,
-                onChanged: (x) {},
-                initialValue: '',
-                eye: false),
-            VGap(height: 15.h),
+              hintText: 'user@example.com',
+              keyboardType: TextInputType.emailAddress,
+              obscureText: false,
+              onChanged: (x) => context.read<AuthCubit>().setEmail(x),
+              initialValue: context.read<AuthCubit>().email,
+              eye: false,
+              onTap: () {},
+            ),
+            VGap(height: 20.h),
             Text(
               'Password',
               style: TextStyle(
+                  fontSize: 11.sp,
                   color: Theme.of(context).iconTheme.color!.withOpacity(.5),
                   fontWeight: FontWeight.bold),
             ),
             VGap(height: 10.h),
             AuthField(
-                hintText: 'Enter your password',
-                keyboardType: TextInputType.visiblePassword,
-                obscureText: true,
-                onChanged: (x) {},
-                initialValue: '',
-                eye: true),
+              hintText: '!^&*#',
+              keyboardType: TextInputType.visiblePassword,
+              obscureText: true,
+              onChanged: (x) => context.read<AuthCubit>().setPassword(x),
+              initialValue: context.read<AuthCubit>().password,
+              eye: true,
+              onTap: () {},
+            ),
             VGap(height: 20.h),
-            AuthButton(label: 'Sign in', onTap: () {}, outlined: false),
+            BlocBuilder<AuthCubit, AuthState>(
+              builder: (context, state) {
+                return AuthButton(
+                    label: 'Sign in',
+                    onTap: () {
+                      context.read<AuthCubit>().LOGIN();
+                    },
+                    outlined: false);
+              },
+            ),
             VGap(height: 30.h),
             Center(
                 child: Text(
@@ -60,7 +77,10 @@ class AuthView extends StatelessWidget {
                   color: Theme.of(context).iconTheme.color!.withOpacity(.5)),
             )),
             VGap(height: 30.h),
-            AuthButton(label: 'Register', onTap: () {}, outlined: true),
+            AuthButton(
+                label: 'Register',
+                onTap: () => Navigator.pushNamed(context, '/register'),
+                outlined: true),
           ],
         ),
       ),

@@ -1,11 +1,17 @@
-import 'package:faker/faker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../cubit/cubit.dart';
+import '../../model/model.dart';
+import '../../service/service.dart';
 import '../widgets/widgets.dart';
 
 class ChatView extends StatelessWidget {
-  const ChatView({super.key});
+  ChatView({super.key});
+
+  final ChatService chatService = ChatService();
 
   @override
   Widget build(BuildContext context) {
@@ -13,47 +19,58 @@ class ChatView extends StatelessWidget {
       body: SafeArea(
         child: Column(children: [
           VGap(height: 15.h),
-          ChatViewHeader(onTap: () {}),
+          ChatViewHeader(
+            onTap: () => Navigator.pushNamed(context, '/setting'),
+            onTapAdd: () => context.read<ChatCubit>().setMode('search'),
+          ),
           VGap(height: 15.h),
           Expanded(
-            child: ListView.builder(
-                physics: const BouncingScrollPhysics(),
-                itemCount: 10,
-                shrinkWrap: true,
-                itemBuilder: (BuildContext context, int index) {
-                  return InkWell(
-                    onTap: () {},
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 25.w, vertical: 10.h),
-                      child: Row(children: [
-                        Container(
-                            height: 50.h,
-                            width: 50.h,
-                            decoration: const BoxDecoration(
-                                color: Colors.black12, shape: BoxShape.circle)),
-                        HGap(width: 20.w),
-                        SizedBox(
-                          width: 220.w,
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(Faker().person.name(),
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold)),
-                                VGap(height: 5.h),
-                                Text(Faker().lorem.sentence(),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    style: TextStyle(
-                                        fontSize: 12.sp,
-                                        color: Theme.of(context).disabledColor))
-                              ]),
-                        ),
-                      ]),
-                    ),
-                  );
-                }),
+            child: BlocBuilder<ChatCubit, ChatState>(
+              builder: (context, state) {
+                // Filter the chat list based on the current user's ID
+                List<ChatModel> filteredChatList =
+                    state.chatModelList.where((chat) {
+                  // Check if the participants array contains the current user's ID
+                  return chat.participants!
+                      .contains(context.read<AuthCubit>().authId);
+                }).toList();
+                // if participants array in "chats" collection contains FirebaseAuth.instance.currentUser.uid
+
+                return ListView.builder(
+                    itemCount: filteredChatList.length,
+                    shrinkWrap: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      final chat = filteredChatList[index];
+                      // find the other participant id other than the current user id from chat.participants array
+                      final otherParticipantId = chat.participants?.firstWhere(
+                        (participantId) =>
+                            participantId !=
+                            FirebaseAuth.instance.currentUser!.uid,
+                        orElse: () => '',
+                      );
+
+                      // find the latest messageId with reference to the chatId present in the "messages" collection
+                      // final recentMessageId =
+                      //     chatService.getRecentMessage(chat.chatId!);
+
+                      return ChatTile(
+                        onTap: () {
+                          if (chat.chatId != '') {
+                            debugPrint(chat.chatId);
+                            context
+                                .read<MessageCubit>()
+                                .setChatId(chat.chatId!);
+                            context.read<MessageCubit>().streamSenderAuth();
+
+                            Navigator.pushNamed(context, '/message');
+                          }
+                        },
+                        otherParticipantId: otherParticipantId!,
+                        chatId: chat.chatId!,
+                      );
+                    });
+              },
+            ),
           ),
         ]),
       ),

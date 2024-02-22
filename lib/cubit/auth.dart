@@ -1,30 +1,17 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:chat_alpha_sept/cubit/auth_state.dart';
-import 'package:chat_alpha_sept/service/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
+import '../service/service.dart';
 import 'cubit.dart';
 
 class AuthCubit extends HydratedCubit<AuthState> {
   final authService = AuthService();
   AuthCubit() : super(const AuthState()) {
     //
-    // if (ChatId != '') {
-    //   _messageSubscription =
-    //       messageService.getMessage(ChatId).listen((messages) {
-    //     setMessageModel(messages);
-    //   });
-    // }
   }
-
-  // @override
-  // Future<void> close() {
-  //   _messageSubscription.cancel();
-  //   return super.close();
-  // }
 
   Future<void> LOGIN() async {
     if (authService.loginFormError(email, password) == 'null') {

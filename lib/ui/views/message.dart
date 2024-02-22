@@ -1,12 +1,21 @@
-import 'package:faker/faker.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../cubit/cubit.dart';
+import '../../model/model.dart';
+import '../../service/service.dart';
+import '../../utils/utils.dart';
 import '../widgets/widgets.dart';
 
 class MessageView extends StatelessWidget {
-  const MessageView({super.key});
+  MessageView({super.key});
+
+  CustomPopupMenuController controller = CustomPopupMenuController();
+
+  final MessageService messageService = MessageService();
 
   @override
   Widget build(BuildContext context) {
@@ -14,125 +23,139 @@ class MessageView extends StatelessWidget {
       body: SafeArea(
         child: Column(children: [
           VGap(height: 15.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.h),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                      color:
-                          Theme.of(context).iconTheme.color!.withOpacity(.05))),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                      height: 50.h,
-                      width: 50.h,
-                      decoration: const BoxDecoration(
-                          color: Colors.black12, shape: BoxShape.circle)),
-                  HGap(width: 20.w),
-                  SizedBox(
-                    width: 170.w,
+          BlocBuilder<MessageCubit, MessageState>(
+            builder: (context, state) {
+              if (state.senderAuthModelList.isEmpty) {
+                return MessageBar(
+                    name: 'Name',
+                    photo: '',
+                    description: 'Description',
+                    onTap: () {});
+              }
+              return CustomPopupMenu(
+                showArrow: false,
+                pressType: PressType.singleClick,
+                // controller: controller,
+                menuBuilder: () {
+                  return Container(
+                    width: 200,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20)),
                     child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(Faker().person.name(),
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold)),
-                          VGap(height: 5.h),
-                          Text('Last active on 10:37 PM',
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: TextStyle(
-                                  fontSize: 12.sp,
-                                  color: Theme.of(context).disabledColor))
-                        ]),
-                  ),
-                  IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        CupertinoIcons.ellipsis_vertical,
-                        color: Colors.black38,
-                      ))
-                ],
-              ),
-            ),
+                      children: [
+                        PopUpMenuTile(
+                            border: true,
+                            label: 'View Profile',
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => PhotoViewPage(
+                                        image: state
+                                            .senderAuthModelList[0].photo
+                                            .toString(),
+                                        title: state.senderAuthModelList[0].name
+                                            .toString())))),
+                        PopUpMenuTile(
+                          border: false,
+                          label: 'Delete Chat',
+                          onTap: () async {
+                            await messageService.deleteDocument(
+                                'chats', context.read<MessageCubit>().chatId);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: MessageBar(
+                    name: state.senderAuthModelList[0].name.toString(),
+                    photo: state.senderAuthModelList[0].photo.toString(),
+                    description: '',
+                    onTap: () {}),
+              );
+            },
           ),
           // VGap(height: 15.h),
           Expanded(
-            child: ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              itemCount: 10,
-              shrinkWrap: true,
-              itemBuilder: (context, index) => Padding(
-                padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 15.h),
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 20.h),
-                  child: Align(
-                    alignment:
-                        index % 2 == 0 ? Alignment.topRight : Alignment.topLeft,
-                    child: Column(
-                      crossAxisAlignment: index % 2 == 0
-                          ? CrossAxisAlignment.end
-                          : CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          constraints: BoxConstraints(
-                            maxWidth: 250.w,
-                          ),
-                          decoration: BoxDecoration(
-                              color: index % 2 == 0
-                                  ? Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(.8)
-                                  : Colors.white,
-                              border: Border.all(
-                                  color: index % 2 == 0
-                                      ? Theme.of(context)
-                                          .primaryColor
-                                          .withOpacity(0)
-                                      : Colors.black26),
-                              borderRadius: BorderRadius.only(
-                                  topLeft: const Radius.circular(30),
-                                  topRight: const Radius.circular(30),
-                                  bottomRight:
-                                      Radius.circular(index % 2 == 0 ? 0 : 30),
-                                  bottomLeft: Radius.circular(
-                                      index % 2 == 0 ? 30 : 0))),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20.w, vertical: 12.h),
-                          child: Text(
-                            Faker().lorem.sentence(),
-                            style: TextStyle(
-                              color: index % 2 != 0
-                                  ? Colors.black45
-                                  : Colors.white,
-                              fontWeight: FontWeight.w800,
+            child: StreamBuilder<List<MessageModel>>(
+                stream: messageService
+                    .getMessage(context.read<MessageCubit>().chatId),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData || snapshot.data != null) {
+                    return ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: snapshot.data!.length,
+                        shrinkWrap: true,
+                        reverse: true,
+                        itemBuilder: (context, index) {
+                          final message = snapshot.data![index];
+
+                          return CustomPopupMenu(
+                            showArrow: false,
+                            pressType: PressType.longPress,
+                            // controller: controller,
+                            menuBuilder: () {
+                              return Container(
+                                width: 200,
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20)),
+                                child: Column(
+                                  children: [
+                                    PopUpMenuTile(
+                                      border: true,
+                                      label: 'delete',
+                                      onTap: () async {
+                                        await messageService.deleteDocument(
+                                            'messages', message.messageId);
+                                      },
+                                    ),
+                                    PopUpMenuTile(
+                                        border: false,
+                                        label: 'details',
+                                        onTap: () {}),
+                                  ],
+                                ),
+                              );
+                            },
+                            child: MessageTile(
+                              sender: message.senderId ==
+                                  FirebaseAuth.instance.currentUser
+                                      ?.uid, // Check if current user sent the message
+                              text: message.content,
+                              imageUrl: message.content,
+                              image: message.type ==
+                                  'image', // Assuming 'image' is the type for image messages
+                              time:
+                                  formatTimeDifference(message.time.toString()),
+                              seen: message.readBy
+                                  .any((id) => id != message.senderId),
+                              onImageTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => PhotoViewPage(
+                                            image: message.content,
+                                            title: formatTimeDifference(
+                                                message.time.toString()),
+                                          ))),
+                              onLongPress: () {},
                             ),
-                          ),
-                        ),
-                        VGap(height: 10.h),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10.w),
-                          child: Text(
-                            '10:35 PM',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 12.sp,
-                                color: Colors.black26),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
+                          );
+                        });
+                  }
+
+                  return Load(onTap: () {});
+                }),
           ),
           Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30.w,vertical: 10.h),
-              child: MessageField(onChanged: (v) {}))
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+            child: MessageField(
+              onChanged: (x) => context.read<MessageCubit>().setContent(x),
+              onSend: () => context.read<MessageCubit>().sendTextMessage(),
+              onAdd: () => context.read<MessageCubit>().sendImageMessage(),
+            ),
+          )
         ]),
       ),
     );

@@ -8,6 +8,7 @@ class RegisterState extends Equatable {
   final String email;
   final String password;
   final String name;
+  final String photo;
   final int key;
   final String error;
   final Status status;
@@ -18,6 +19,7 @@ class RegisterState extends Equatable {
       this.email = '',
       this.password = '',
       this.name = '',
+      this.photo = '',
       this.key = 0,
       this.error = '',
       this.status = Status.initial});
@@ -28,6 +30,7 @@ class RegisterState extends Equatable {
       String? email,
       String? password,
       String? name,
+      String? photo,
       int? key,
       String? error,
       Status? status}) {
@@ -37,6 +40,7 @@ class RegisterState extends Equatable {
       email: email ?? this.email,
       password: password ?? this.password,
       name: name ?? this.name,
+      photo: photo ?? this.photo,
       key: key ?? this.key,
       error: error ?? this.error,
       status: status ?? this.status,
@@ -45,7 +49,7 @@ class RegisterState extends Equatable {
 
   @override
   List<Object?> get props =>
-      [username, taken, email, password, name, key, error, status];
+      [username, taken, email, password, name, photo, key, error, status];
 }
 
 /*

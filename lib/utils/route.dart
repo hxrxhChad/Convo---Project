@@ -1,20 +1,24 @@
-import 'package:chat_alpha_sept/debug/hall_page.dart';
 import 'package:flutter/material.dart';
 
 import '../model/model.dart';
 import '../ui/screens/screens.dart';
-import 'utils.dart';
 
 class Routes {
+  static const initial = '/';
+  static const auth = '/auth';
+  static const register = '/register';
+  static const chat = '/chat';
+  static const message = '/message';
+  static const setting = '/setting';
   Routes();
   static List<PageModel> routes() {
     return [
-      const PageModel(route: Pages.initial, page: HallPage()),
-      const PageModel(route: Pages.register, page: RegisterScreen()),
-      const PageModel(route: Pages.auth, page: AuthScreen()),
-      const PageModel(route: Pages.chat, page: ChatScreen()),
-      const PageModel(route: Pages.message, page: MessageScreen()),
-      const PageModel(route: Pages.setting, page: SettingScreen())
+      const PageModel(route: initial, page: AuthScreen()),
+      const PageModel(route: auth, page: AuthScreen()),
+      const PageModel(route: register, page: RegisterScreen()),
+      const PageModel(route: chat, page: ChatScreen()),
+      const PageModel(route: message, page: MessageScreen()),
+      const PageModel(route: setting, page: SettingScreen())
     ];
   }
 

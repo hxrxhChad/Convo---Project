@@ -36,11 +36,7 @@ class AuthState extends Equatable {
 }
 
 /*
-username
-taken?
 email
 password
-name
-key
 status
 */
