@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
