@@ -7,8 +7,9 @@ import 'package:flutter/foundation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'cubit/cubit.dart';
-import 'utils/utils.dart';
+import 'cubit/index.dart';
+import 'ui/views/index.dart';
+import 'utils/index.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,11 +35,7 @@ class ConvoApp extends StatelessWidget {
     Style().lightOverlay(context);
     return ScreenUtilInit(builder: (context, child) {
       return MultiBlocProvider(providers: [
-        BlocProvider(create: (_) => RegisterCubit()),
         BlocProvider(create: (_) => AuthCubit()),
-        BlocProvider(create: (_) => ChatCubit()),
-        BlocProvider(create: (_) => MessageCubit()),
-        BlocProvider(create: (_) => SettingCubit()),
       ], child: const App());
     });
   }
@@ -51,14 +48,15 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: 'Convo',
-        debugShowCheckedModeBanner: false,
-        theme: Style.light,
-        themeMode: ThemeMode.light,
-        initialRoute: context.read<AuthCubit>().authId == ''
-            ? Routes.initial
-            : Routes.chat,
-        onGenerateRoute: Routes.onGenerateRoute);
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, state) {
+        return MaterialApp(
+            title: 'Eight Miles',
+            debugShowCheckedModeBanner: false,
+            theme: Style.light,
+            themeMode: ThemeMode.light,
+            home: state.authId != '' ? const HomeView() : const AuthView());
+      },
+    );
   }
 }

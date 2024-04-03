@@ -1,71 +1,104 @@
-import 'package:chat_alpha_sept/model/model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+import '../model/index.dart';
 
 class AuthService {
-  String loginFormError(String email, String password) {
-    if (email.isEmpty) {
-      return "Email can't be empty";
-    } else if (password.isEmpty) {
-      return "Password can't be empty";
-    } else if (password.length < 8) {
-      return "Password can't be less than 8 characters";
-    } else {
-      return 'null';
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<User?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleSignInAccount =
+          await googleSignIn.signIn();
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication =
+            await googleSignInAccount.authentication;
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleSignInAuthentication.accessToken,
+          idToken: googleSignInAuthentication.idToken,
+        );
+        final UserCredential authResult =
+            await _auth.signInWithCredential(credential);
+        final User? user = authResult.user;
+        if (user != null && authResult.additionalUserInfo?.isNewUser == true) {
+          String authId = user.uid;
+          String username = user.email!.split('@').first;
+          String email = user.email ?? '';
+          String name = user.displayName ?? '';
+          int time = DateTime.now().millisecondsSinceEpoch;
+          String photo = user.photoURL ?? '';
+          await registerCloud(authId, username, email, name, time, photo);
+        }
+        return user;
+      }
+      return null;
+    } catch (error) {
+      debugPrint("Error signing in with Google: $error");
+      return null;
     }
   }
 
-  String registerFormError(String username, String photo, String email,
-      String password, String name) {
-    if (username.isEmpty) {
-      return "Username can't be empty";
-    } else if (email.isEmpty) {
-      return "Email can't be empty";
-    } else if (photo.isEmpty) {
-      return "Email can't be empty";
-    } else if (password.isEmpty) {
-      return "Password can't be empty";
-    } else if (password.length < 8) {
-      return "Password can't be less than 8 characters";
-    } else if (name.isEmpty) {
-      return "Name can't be empty";
-    } else {
-      return 'null';
+  Future<void> signOut() async {
+    try {
+      await _auth.signOut();
+      await googleSignIn.signOut();
+      debugPrint('User signed out successfully');
+    } catch (error) {
+      debugPrint('Error signing out: $error');
     }
   }
 
-  Future<String?> login(String email, String password) async {
-    final credential = await FirebaseAuth.instance
-        .signInWithEmailAndPassword(email: email, password: password);
-    return credential.user?.uid;
+  Future<void> updateUserInfo(
+      {String? email, String? photo, String? name, String? username}) async {
+    try {
+      CollectionReference users =
+          FirebaseFirestore.instance.collection('EMauth');
+      QuerySnapshot querySnapshot =
+          await users.where('authId', isEqualTo: _auth.currentUser?.uid).get();
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+        Map<String, dynamic> updatedData = {};
+        if (email != null) updatedData['email'] = email;
+        if (photo != null) updatedData['photo'] = photo;
+        if (name != null) updatedData['name'] = name;
+        if (username != null) updatedData['username'] = username;
+        await userDoc.reference.update(updatedData);
+        debugPrint('User information updated successfully!');
+      } else {
+        debugPrint('User not found with the provided authId.');
+      }
+    } catch (error) {
+      debugPrint('Error updating user information: $error');
+    }
   }
 
-  Future<void> logout() async {
-    await FirebaseAuth.instance.signOut();
+  Stream<List<AuthModel>> getAuthModel() {
+    return FirebaseFirestore.instance
+        .collection('EMauth')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) {
+              return AuthModel.fromJson(doc.data());
+            }).toList());
   }
 
-  Future<User?> register(String email, String password) async {
-    final credential = await FirebaseAuth.instance
-        .createUserWithEmailAndPassword(email: email, password: password);
-    return credential.user;
-  }
-
-  Future<void> registerCloud(String username, String email, String password,
-      String name, String photo, int time) async {
+  Future<void> registerCloud(String authId, String username, String email,
+      String name, int time, String photo) async {
     AuthModel user = AuthModel(
+        authId: authId,
         username: username,
         email: email,
-        password: password,
         name: name,
-        time: time,
-        gender: '',
+        accountCreationTime: time,
         photo: photo);
 
     final userRef = FirebaseFirestore.instance
-        .collection('users')
+        .collection('EMauth')
         .doc(FirebaseAuth.instance.currentUser?.uid);
 
-    user.authId = userRef.id;
+    // user.authId = userRef.id;
     final data = user.toJson();
 
     userRef.set(data);
@@ -73,7 +106,7 @@ class AuthService {
 
   Stream<bool> getTaken(String username) {
     return FirebaseFirestore.instance
-        .collection('users')
+        .collection('EMauth')
         .where('username', isEqualTo: username)
         .snapshots()
         .map((querySnapshot) => querySnapshot.docs.isNotEmpty);

@@ -1,96 +1,127 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
-import '../service/service.dart';
-import 'cubit.dart';
+import '../model/index.dart';
+import '../service/index.dart';
+import '../utils/index.dart';
+import 'index.dart';
 
 class AuthCubit extends HydratedCubit<AuthState> {
-  final authService = AuthService();
+  late StreamSubscription<List<AuthModel>> authModelSubscription;
+  final AuthService authService = AuthService();
+
   AuthCubit() : super(const AuthState()) {
-    //
+    _streamAuthList();
+  }
+
+  void _streamAuthList() {
+    authModelSubscription = authService.getAuthModel().listen(
+      (authModelList) {
+        setAuthModel(authModelList);
+      },
+      onError: (error) {
+        debugPrint('Error fetching authModel results: $error');
+      },
+    );
+  }
+
+  @override
+  Future<void> close() {
+    authModelSubscription.cancel();
+    return super.close();
+  }
+
+  Future<void> updateAuth() async {
+    List<AuthModel> self =
+        state.authModel.where((auth) => auth.authId == state.authId).toList();
+    setStatus(Status.loading);
+    await authService.updateUserInfo(
+      email: state.emailId != '' ? state.emailId : self[0].email,
+      photo: state.photo != '' ? state.photo : self[0].photo,
+      name: state.name != '' ? state.name : self[0].name,
+      username: state.username != '' ? state.username : self[0].username,
+    );
+    setStatus(Status.initial);
+  }
+
+  Future<void> addImage() async {
+    String? image = await uploadPhoto();
+    setPhoto(image!);
   }
 
   Future<void> LOGIN() async {
-    if (authService.loginFormError(email, password) == 'null') {
-      debugPrint(email);
-      debugPrint(password);
-      setStatus(Status.loading);
-      try {
-        final uid = await authService.login(email, password);
-        setAuthId(uid!);
-        setStatus(Status.success);
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'invalid-email') {
-          setStatus(Status.error);
-          setError('Please provide a valid email');
-          return;
-        } else if (e.code == 'user-disabled') {
-          setStatus(Status.error);
-          setError('The account has been disabled');
-          return;
-        } else if (e.code == 'user-not-found') {
-          setStatus(Status.error);
-          setError('Provided user account does not exist');
-          return;
-        } else if (e.code == 'wrong-password') {
-          setStatus(Status.error);
-          setError('You provided a wrong password');
-          return;
-        }
-      }
+    setStatus(Status.loading);
+    User? user = await authService.signInWithGoogle();
+    if (user != null) {
+      setAuthId(user.uid);
+      setStatus(Status.success);
+      debugPrint('during login -> ${state.authId}');
     } else {
+      setError('Failed to sign in with Google');
       setStatus(Status.error);
-      setError(authService.loginFormError(email, password));
-      return;
     }
   }
 
   Future<void> SIGNOUT() async {
     setStatus(Status.loading);
-    try {
-      await FirebaseAuth.instance.signOut();
-      setAuthId('');
-      setStatus(Status.success);
-    } catch (e) {
-      setStatus(Status.error);
-      setError(e.toString());
-    }
+    await authService.signOut();
+    setAuthId('');
+    setStatus(Status.initial);
   }
 
+  // Setter and getter methods for authModel
+  void setAuthModel(List<AuthModel> authModel) =>
+      emit(state.copyWith(authModel: authModel));
+
+  List<AuthModel> get authModel => state.authModel;
+
+  // Setter and getter methods for authId
   void setAuthId(String authId) => emit(state.copyWith(authId: authId));
-  void setEmail(String email) => emit(state.copyWith(email: email));
-  void setPassword(String password) => emit(state.copyWith(password: password));
-  void setError(String error) => emit(state.copyWith(error: error));
-  void setStatus(Status status) => emit(state.copyWith(status: status));
 
   String get authId => state.authId;
-  String get email => state.email;
-  String get password => state.password;
+
+  // Setter and getter methods for username
+  void setUsername(String username) => emit(state.copyWith(username: username));
+
+  String get username => state.username;
+
+  // Setter and getter methods for emailId
+  void setEmailId(String emailId) => emit(state.copyWith(emailId: emailId));
+
+  String get emailId => state.emailId;
+
+  // Setter and getter methods for name
+  void setName(String name) => emit(state.copyWith(name: name));
+
+  String get name => state.name;
+
+  // Setter and getter methods for photo
+  void setPhoto(String photo) => emit(state.copyWith(photo: photo));
+
+  String get photo => state.photo;
+
+  // Setter and getter methods for error
+  void setError(String error) => emit(state.copyWith(error: error));
+
   String get error => state.error;
+
+  // Setter and getter methods for status
+  void setStatus(Status status) => emit(state.copyWith(status: status));
+
   Status get status => state.status;
 
   @override
-  AuthState fromJson(Map<String, dynamic> json) {
-    return AuthState(
-      authId: json['authId'] as String,
-      email: json['email'] as String,
-      password: json['password'] as String,
-      error: json['error'] as String,
-      status: Status.values[json['status'] as int],
-    );
+  AuthState? fromJson(Map<String, dynamic> json) {
+    return AuthState.fromJson(json);
   }
 
   @override
-  Map<String, dynamic> toJson(AuthState state) {
-    return {
-      'authId': state.authId,
-      'email': state.email,
-      'password': state.password,
-      'error': state.error,
-      'status': state.status.index,
-    };
+  Map<String, dynamic>? toJson(AuthState state) {
+    return state.toJson();
   }
 }

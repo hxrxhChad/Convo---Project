@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'utils.dart';
+import 'index.dart';
 
 class Style {
   static const _pageTransitionTheme = PageTransitionsTheme(builders: {
