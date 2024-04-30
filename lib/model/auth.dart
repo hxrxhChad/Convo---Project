@@ -1,23 +1,31 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:convert';
+
+import 'package:equatable/equatable.dart';
 
 AuthModel authModelFromJson(String str) => AuthModel.fromJson(json.decode(str));
 
 String authModelToJson(AuthModel data) => json.encode(data.toJson());
 
-class AuthModel {
+class AuthModel extends Equatable {
   String? authId;
   String? username;
   String? email;
+  String? password;
   String? name;
-  int? accountCreationTime;
+  int? time;
+  String? gender;
   String? photo;
 
   AuthModel({
     this.authId,
     this.username,
     this.email,
+    this.password,
     this.name,
-    this.accountCreationTime,
+    this.time,
+    this.gender,
     this.photo,
   });
 
@@ -25,16 +33,20 @@ class AuthModel {
     String? authId,
     String? username,
     String? email,
+    String? password,
     String? name,
-    int? accountCreationTime,
+    int? time,
+    String? gender,
     String? photo,
   }) =>
       AuthModel(
         authId: authId ?? this.authId,
         username: username ?? this.username,
         email: email ?? this.email,
+        password: password ?? this.password,
         name: name ?? this.name,
-        accountCreationTime: accountCreationTime ?? this.accountCreationTime,
+        time: time ?? this.time,
+        gender: gender ?? this.gender,
         photo: photo ?? this.photo,
       );
 
@@ -42,8 +54,10 @@ class AuthModel {
         authId: json["authId"],
         username: json["username"],
         email: json["email"],
+        password: json["password"],
         name: json["name"],
-        accountCreationTime: json["accountCreationTime"],
+        time: json["time"],
+        gender: json["gender"],
         photo: json["photo"],
       );
 
@@ -51,8 +65,14 @@ class AuthModel {
         "authId": authId,
         "username": username,
         "email": email,
+        "password": password,
         "name": name,
-        "accountCreationTime": accountCreationTime,
+        "time": time,
+        "gender": gender,
         "photo": photo,
       };
+
+  @override
+  List<Object?> get props =>
+      [authId, username, email, password, name, time, gender, photo];
 }

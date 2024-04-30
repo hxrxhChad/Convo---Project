@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:iconsax/iconsax.dart';
 
-import '../views/index.dart';
+import 'widgets.dart';
 
 class SettingAvatar extends StatelessWidget {
   final String image;
@@ -12,27 +12,24 @@ class SettingAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(200),
-        child: SizedBox(
-          height: 100.h,
-          width: 100.h,
-          child: CachedNetworkImage(
-            fit: BoxFit.cover,
-            imageUrl: image,
-            placeholder: (context, url) => Padding(
-              padding: const EdgeInsets.all(15),
-              child: Load(onTap: () {}),
-            ),
-            errorWidget: (context, url, error) => const Padding(
-              padding: EdgeInsets.all(15),
-              child: Icon(
-                Iconsax.information,
-                color: Colors.blue,
-                size: 14,
-              ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(200),
+      child: SizedBox(
+        height: 100.h,
+        width: 100.h,
+        child: CachedNetworkImage(
+          fit: BoxFit.cover,
+          imageUrl: image,
+          placeholder: (context, url) => Padding(
+            padding: const EdgeInsets.all(15),
+            child: Load(onTap: () {}),
+          ),
+          errorWidget: (context, url, error) => const Padding(
+            padding: EdgeInsets.all(15),
+            child: Icon(
+              Iconsax.information,
+              color: Colors.blue,
+              size: 14,
             ),
           ),
         ),
